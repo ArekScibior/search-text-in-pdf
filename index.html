@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Find Text in Pdf</title>
+</head>
+
+<body>
+
+</body> 
+
+<script>
+var query = "Faktura";
+function searchTextOnPage(doc, pageNumber, fileName) {
+	return doc.getPage(pageNumber).then(function (page) {
+		return page.getTextContent();
+	}).then(function (content) {
+		var text = content.items.map(function (i) { return i.str; }).join('');
+		var reg = new RegExp("(.{0,20})" + query + "(.{0,20})", "gi"), m;
+		var lines = ['===================', " Plik: " + fileName + " / Strona: " + pageNumber ];
+		while (element = reg.exec(text)) {
+            var line = "Znaleziono: " + element[0];
+            lines.push(line);
+		}
+        if (lines.length == 2) {
+            lines.push('----------------Brak szukanej frazy--------------------')
+            return {items: lines};
+        } else {
+            return {items: lines};
+        }
+	});
+}
+var fileNames = [ 'File1.pdf', 'File2.pdf', 'File3.pdf', 'File4.pdf' ]
+var createHtml = function(FileName) {
+	var loading = pdfjsLib.getDocument('assets/'+FileName);
+	loading.promise.then(function (doc) {
+		var results = [];
+		for (var i = 1; i <= doc.numPages; i++)
+			results.push(searchTextOnPage(doc, i, FileName));
+		return Promise.all(results);
+	}).then(function (searchResults) {
+		// Display results using divs
+		searchResults.forEach(function (result) {
+			var div = document.createElement('div'); div.className="pr"; document.body.appendChild(div);
+			//div.textContent = 'Strona:' + result.page + '';
+			result.items.forEach(function (s) {
+				var div2 = document.createElement('div'); div2.className="prl"; div.appendChild(div2);
+				div2.textContent = s; 
+			});
+		});
+	}).catch(console.error);
+}
+
+for (var i = 0; i < fileNames.length; i++) {
+	createHtml(fileNames[i])
+}
+</script>
+</html>
