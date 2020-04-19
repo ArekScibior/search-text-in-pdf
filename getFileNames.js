@@ -9,5 +9,6 @@ fs.writeFile("./namesArray.txt", "var fileNames = " + JSON.stringify(outputArray
     if(err) {
         return console.log(err);
     }
+    s
     console.log("The file was saved!");
 });
